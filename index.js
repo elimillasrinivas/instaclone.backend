@@ -33,7 +33,7 @@ app.get("/",(req,res)=>{
   res.status(200).json({message:"Success"})
 })
 
-app.post("uploads", (req, resp) => {
+app.post("/uploads", (req, resp) => {
   const { name, location, description } = req.body;
   const { image_files } = req.files;
   const fragments = image_files.name.split(".");
@@ -65,7 +65,7 @@ app.post("uploads", (req, resp) => {
   }
 });
 
-app.get("all", async (req, resp) => {
+app.get("/all", async (req, resp) => {
   try {
     const response = await UsersShema.find();
     resp.json({ result: response });
