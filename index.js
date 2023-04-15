@@ -2,13 +2,14 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const app = express();
-const fileUpload = require("express-fileupload");
 const { v4: uniqKeyGenerate } = require("uuid");
 const UsersShema = require("./models/user");
 const path = require("path");
-const PORT = 5000 || process.env.PORT
+const dotenv=require("dotenv")
+dotenv.config()
+const PORT = 5000 || process.env.PORT;
 
-const uri = `mongodb+srv://insta:insta@cluster0.zqwlg0r.mongodb.net/instaDB?retryWrites=true&w=majority`;
+const uri = process.env.MONGO_URI
 mongoose.set("strictQuery", true);
 mongoose.connect(uri, (err) => {
   if (err) {
@@ -18,30 +19,20 @@ mongoose.connect(uri, (err) => {
 
 app.use(cors());
 app.use(express.json());
-app.use(fileUpload());
+// app.use(fileUpload());
 
-// app.use(express.static(path.join(__dirname,"../frontend/build")))
-
-// app.get("*",(req,res)=>{
-//   res.sendFile(path.join(__dirname,"../frontend/build/index.html"))
-// })
 app.listen(PORT, () => {
-  console.log("Running on PORT",PORT);
+  console.log("Running on PORT", PORT);
 });
 
-app.get("/",(req,res)=>{
-  res.status(200).json({message:"Success"})
-})
-
 app.post("/uploads", (req, resp) => {
-  const { name, location, description } = req.body;
-  const { image_files } = req.files;
-  const fragments = image_files.name.split(".");
+  const { name, location, file_name, description } = req.body;
+  const fragments = file_name.split(".");
   const fileExt = fragments[fragments.length - 1];
   const uniqKey = uniqKeyGenerate();
   const fileName = uniqKey + "." + fileExt;
   if (["jpeg", "jpg", "png", "svg"].includes(fileExt)) {
-    image_files.mv("./uploads/" + fileName, async (err) => {
+ async (err) => {
       if (err) {
         resp.json({ message: err });
       } else {
@@ -59,10 +50,13 @@ app.post("/uploads", (req, resp) => {
           resp.json({ message: e });
         }
       }
-    });
+    };
   } else {
     resp.json({ message: "Please upload an image file" });
   }
+
+
+
 });
 
 app.get("/all", async (req, resp) => {
@@ -72,8 +66,4 @@ app.get("/all", async (req, resp) => {
   } catch (e) {
     resp.json({ message: e });
   }
-});
-
-app.get("/image/:filename", (req, resp) => {
-  resp.sendFile(path.join(__dirname, `./uploads/${req.params.filename}`));
 });
